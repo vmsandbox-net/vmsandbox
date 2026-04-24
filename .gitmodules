@@ -1,0 +1,16 @@
+[submodule "linux"]
+	path = linux
+	url = https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+	ignore = untracked
+[submodule "opensbi"]
+	path = opensbi
+	url = https://github.com/riscv-software-src/opensbi.git
+[submodule "emsdk"]
+	path = emsdk
+	url = https://github.com/emscripten-core/emsdk.git
+[submodule "e2fsprogs"]
+	path = e2fsprogs
+	url = https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+[submodule "tinyemu"]
+	path = tinyemu
+	url = https://github.com/vmsandbox-net/vmsandbox-tinyemu.git

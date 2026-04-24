@@ -1,0 +1,8 @@
+[
+  { "file": "ping.yaml",          "title": "Ping",       "description": "Send ICMP pings between two VMs on a shared network." },
+  { "file": "chat.yaml",          "title": "IRC Chat",   "description": "Run an IRC server and connect multiple VMs as chat clients." },
+  { "file": "routing.yaml",       "title": "Routing",    "description": "Explore IP routing across multiple subnets with a router VM." },
+  { "file": "etcd.yaml",          "title": "etcd",       "description": "Deploy a distributed etcd key-value cluster across VMs." },
+  { "file": "postgresql.yaml",    "title": "PostgreSQL", "description": "Set up a PostgreSQL database server and connect a client VM." },
+  { "file": "the-end.yaml",       "title": "The End",    "description": "You've completed all the labs. Fireworks await." }
+]

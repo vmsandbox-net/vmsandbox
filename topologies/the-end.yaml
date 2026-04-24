@@ -1,0 +1,58 @@
+title: "The End"
+vms:
+  - id: fireworks
+    title: "Fireworks"
+    x: 420
+    y: 60
+    cols: 120
+    rows: 45
+    mem_size: 128
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname fireworks
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;fireworks\007'
+          clear
+          /usr/local/bin/fireworks 180
+        fi
+
+hubs: []
+switches: []
+wires: []
+
+default_window: readme
+
+docs:
+  - id: readme
+    title: "The End"
+    x: 40
+    y: 60
+    width: 350
+    height: 600
+    markdown: |
+      ## You've reached the end!
+
+      Congratulations — you've worked through all the **vmsandbox.net** labs:
+
+      - Ping (ICMP, switches vs hubs)
+      - IRC Chat
+      - Routing (multi-subnet)
+      - etcd (distributed key-value)
+      - PostgreSQL (streaming replication)
+
+      ---
+
+      ## What is VMSandbox?
+
+      **vmsandbox.net** runs real Linux virtual machines entirely in your browser — no install, no cloud account, no server. Every VM is a full RISC-V Linux system with a real network stack.
+
+      Visit the project on GitHub:
+
+      [github.com/vmsandbox-net/vmsandbox](https://github.com/vmsandbox-net/vmsandbox)
+
+      Email: [jon@vmsandbox.net](mailto:jon@vmsandbox.net)

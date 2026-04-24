@@ -1,0 +1,23 @@
+{
+  "name": "vmsandbox",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@xterm/xterm": "^5.5.0",
+    "js-yaml": "^4.1.1",
+    "marked": "^18.0.0",
+    "zstandard-wasm": "^1.5.0-rev.5"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1",
+    "vite-plugin-static-copy": "^4.0.0"
+  }
+}

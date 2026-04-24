@@ -1,0 +1,14 @@
+!.vscode/extensions.json
+.claude
+.env
+.vscode/*
+assets
+dist
+dist-static
+downloads
+ext2opt/ext2opt
+node_modules
+sector_log.txt
+tinyemu/js/riscvemu64-wasm.js
+tinyemu/js/riscvemu64-wasm.wasm
+tmp

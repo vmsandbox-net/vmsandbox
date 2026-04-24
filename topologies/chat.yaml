@@ -1,0 +1,443 @@
+title: IRC Chat
+vms:
+  - id: alexvm
+    title: Alex's VM (10.0.0.1)
+    x: 40
+    'y': 579
+    cols: 68
+    rows: 20
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname alexvm
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.1/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;alexvm\007'
+          clear
+          echo "Run 'irssi -c 10.0.0.50 -n alex' to connect to the IRC server."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   alexvm
+        10.0.0.2   blakevm
+        10.0.0.3   caseyvm
+        10.0.0.4   davisvm
+        10.0.0.50  server1
+        10.0.0.51  server2
+  - id: blakevm
+    title: Blake's VM (10.0.0.2)
+    x: 568
+    'y': 579
+    cols: 68
+    rows: 20
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname blakevm
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.2/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;blakevm\007'
+          clear
+          echo "Run 'irssi -c 10.0.0.50 -n blake' to connect to the IRC server."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   alexvm
+        10.0.0.2   blakevm
+        10.0.0.3   caseyvm
+        10.0.0.4   davisvm
+        10.0.0.50  server1
+        10.0.0.51  server2
+  - id: caseyvm
+    title: Casey's VM (10.0.0.3)
+    x: 1094
+    'y': 579
+    cols: 68
+    rows: 20
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname caseyvm
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.3/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;caseyvm\007'
+          clear
+          echo "Run 'irssi -c 10.0.0.50 -n casey' to connect to the IRC server."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   alexvm
+        10.0.0.2   blakevm
+        10.0.0.3   caseyvm
+        10.0.0.4   davisvm
+        10.0.0.50  server1
+        10.0.0.51  server2
+  - id: server2
+    title: Server 2 (10.0.0.51)
+    x: 1287
+    'y': 60
+    cols: 112
+    rows: 25
+    console_count: 2
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname server2
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.51/24 dev eth0
+        echo "vmsandbox.net IRC server 2" > /etc/ngircd/ngircd.motd
+        sed -i 's/^[[:space:]]*;*[[:space:]]*Name = .*/Name = irc2.vmsandbox.net/' /etc/ngircd/ngircd.conf
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;server2\007'
+          clear
+          echo "Run 'ngircd -n' to start IRC server 2."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   alexvm
+        10.0.0.2   blakevm
+        10.0.0.3   caseyvm
+        10.0.0.4   davisvm
+        10.0.0.50  server1
+        10.0.0.51  server2
+  - id: davisvm
+    title: Davis's VM (10.0.0.4)
+    x: 1628
+    'y': 576
+    cols: 68
+    rows: 20
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname davisvm
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.4/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;davisvm\007'
+          clear
+          echo "Run 'irssi -c 10.0.0.51 -n davis' to connect to IRC server 2."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   alexvm
+        10.0.0.2   blakevm
+        10.0.0.3   caseyvm
+        10.0.0.4   davisvm
+        10.0.0.50  server1
+        10.0.0.51  server2
+  - id: server1
+    title: Server 1 (10.0.0.50)
+    x: 385
+    'y': 60
+    cols: 118
+    console_count: 2
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname server1
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.50/24 dev eth0
+        echo "vmsandbox.net IRC server" > /etc/ngircd/ngircd.motd
+        sed -i 's/^[[:space:]]*;*[[:space:]]*Name = .*/Name = irc.vmsandbox.net/' /etc/ngircd/ngircd.conf
+        cp /run/init/hosts /etc/hosts
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;server1\007'
+          clear
+          echo "Run 'ngircd -n' to start IRC server 1."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   alexvm
+        10.0.0.2   blakevm
+        10.0.0.3   caseyvm
+        10.0.0.4   davisvm
+        10.0.0.50  server1
+        10.0.0.51  server2
+    rows: 25
+hubs: []
+switches:
+  - id: switch1
+    title: Switch
+    ports: 7
+    x: 250
+    'y': 1016
+wires:
+  - vm:
+      id: server1
+      iface: eth0
+    hub:
+      id: switch1
+      port: 0
+  - vm:
+      id: caseyvm
+      iface: eth0
+    hub:
+      id: switch1
+      port: 2
+  - vm:
+      id: blakevm
+      iface: eth0
+    hub:
+      id: switch1
+      port: 3
+  - vm:
+      id: alexvm
+      iface: eth0
+    hub:
+      id: switch1
+      port: 1
+docs:
+  - id: readme
+    title: Lab Instructions
+    x: 40
+    'y': 60
+    width: 325
+    height: 497
+    markdown: |
+      ## IRC Chat Lab
+
+      This lab demonstrates IRC chat between three clients and a shared IRC server on a switched network.
+
+      ### Network layout
+
+      - Alex's VM: `10.0.0.1`
+      - Blake's VM: `10.0.0.2`
+      - Casey's VM: `10.0.0.3`
+      - Server 1: `10.0.0.50`
+      - Server 2: `10.0.0.51`
+      
+      ### Steps
+
+      1. Start the IRC server:
+
+      ```send-vm:server1
+      ngircd -n
+      ```
+
+      2. Connect from each of the clients:
+
+      ```send-vm:alexvm
+      irssi -c 10.0.0.50 -n alex
+      ```
+      ```send-vm:blakevm
+      irssi -c 10.0.0.50 -n blake
+      ```
+      ```send-vm:caseyvm
+      irssi -c 10.0.0.50 -n casey
+      ```
+
+      3. All join an IRC channel:
+
+      ```send-vm:alexvm
+      /join #demo
+      ```
+      ```send-vm:blakevm
+      /join #demo
+      ```
+      ```send-vm:caseyvm
+      /join #demo
+      ```
+
+      4. Send some messages
+
+      ```send-vm:alexvm
+      hi everyone! i'm new here :)
+      ```
+      ```send-vm:blakevm
+      hey Alex, welcome to #demo!
+      ```
+      ```send-vm:caseyvm
+      welcome! feel free to ask anything
+      ```
+
+      ### Next steps
+
+      ```goto:routing
+      Routing Lab →
+      ```
+
+      Or keep going with the advanced topic below.
+
+      ---
+
+      ## IRC Server Federation
+
+      IRC servers can link together so that users on different servers share the same channels. This is how the original IRC network scaled to thousands of simultaneous users across dozens of servers.
+
+      In this section you will add a second IRC server and a fourth client, then link the two servers together.
+
+      ### Step 1 — Connect the new VMs
+
+      **Server 2** (`10.0.0.51`) and **Davis's VM** (`10.0.0.4`) are placed on the canvas but not yet wired. Drag a wire from each to the switch.
+
+      ### Step 2 — Configure federation
+
+      ngircd is running in the foreground on the **Server 1** terminal. **Click on the Server 1 terminal and press Ctrl+C** to stop it, then append the `[Server]` block pointing at server2:
+
+      ```send-vm:server1
+      cat >> /etc/ngircd/ngircd.conf << 'EOF'
+
+      [Server]
+          Name = irc2.vmsandbox.net
+          Host = 10.0.0.51
+          Port = 6667
+          MyPassword = linkpwd
+          PeerPassword = linkpwd
+      EOF
+      ```
+
+      Server 2 has not been started yet, so run this directly:
+
+      ```send-vm:server2
+      cat >> /etc/ngircd/ngircd.conf << 'EOF'
+
+      [Server]
+          Name = irc.vmsandbox.net
+          Host = 10.0.0.50
+          Port = 6667
+          MyPassword = linkpwd
+          PeerPassword = linkpwd
+      EOF
+      ```
+
+      ### Step 3 — Start both servers
+
+      ```send-vm:server1
+      ngircd -n
+      ```
+
+      ```send-vm:server2
+      ngircd -n
+      ```
+
+      ### Step 4 — Reconnect the existing clients
+
+      Stopping Server 1 to configure it disconnected Alex, Blake, and Casey. Reconnect each one:
+
+      ```send-vm:alexvm
+      /reconnect
+      ```
+      ```send-vm:blakevm
+      /reconnect
+      ```
+      ```send-vm:caseyvm
+      /reconnect
+      ```
+
+      ### Step 5 — Connect Davis to server2
+
+      ```send-vm:davisvm
+      irssi -c 10.0.0.51 -n davis
+      ```
+
+      ```send-vm:davisvm
+      /join #demo
+      ```
+
+      ### Step 6 — Chat across servers
+
+      Davis is on `irc2` but has joined `#demo`. The others are on `irc`. Send a message from Davis:
+
+      ```send-vm:davisvm
+      hello from the other server!
+      ```
+
+      The message appears in `#demo` for Alex, Blake, and Casey even though they are connected to a different server. The two servers relay channel messages between each other automatically.
+
+      Reply from Alex to confirm the link works in both directions:
+
+      ```send-vm:alexvm
+      hey davis, we can see you!
+      ```
+
+      ### Step 7 — Inspect the server link
+
+      From any connected client, list the servers in the network:
+
+      ```send-vm:alexvm
+      /links
+      ```
+
+      Press "Alt+1" in alexvm to see the output from the `/links` command.
+
+      Both servers appear, along with the link between them — exactly the view any IRC client sees on a federated IRC network.
+
+      ### Next steps
+
+      ```goto:routing
+      Routing Lab →
+      ```
+default_window: readme

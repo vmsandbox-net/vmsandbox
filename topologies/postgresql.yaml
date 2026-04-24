@@ -1,0 +1,536 @@
+title: "PostgreSQL"
+vms:
+  - id: primary
+    title: "Primary (10.0.0.1)"
+    x: 1230
+    y: 60
+    cols: 100
+    rows: 18
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname primary
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.1/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+        pg_lsclusters | grep -q '17.*main' || pg_createcluster 17 main
+        PG_CONF=/etc/postgresql/17/main/postgresql.conf
+        PG_CONF_CHANGED=0
+        if ! grep -q '^listen_addresses' "$PG_CONF"; then
+          echo "listen_addresses = '*'" >> "$PG_CONF"
+          echo "wal_level = replica" >> "$PG_CONF"
+          echo "max_wal_senders = 5" >> "$PG_CONF"
+          echo "wal_keep_size = 64" >> "$PG_CONF"
+          PG_CONF_CHANGED=1
+        fi
+        PG_HBA=/etc/postgresql/17/main/pg_hba.conf
+        sed -i '/^local[[:space:]]*all[[:space:]]*postgres[[:space:]]*peer/s/peer/trust/' "$PG_HBA"
+        PG_HBA_CHANGED=0
+        if ! grep -q 'replicator' "$PG_HBA"; then
+          echo "host  replication  replicator  10.0.0.0/24  trust" >> "$PG_HBA"
+          echo "host  all          postgres    10.0.0.0/24  trust" >> "$PG_HBA"
+          PG_HBA_CHANGED=1
+        fi
+        echo "$PG_CONF_CHANGED" > /run/pg_conf_changed
+        echo "$PG_HBA_CHANGED" > /run/pg_hba_changed
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;primary\007'
+          PG_CONF_CHANGED=$(cat /run/pg_conf_changed 2>/dev/null || echo 0)
+          PG_HBA_CHANGED=$(cat /run/pg_hba_changed 2>/dev/null || echo 0)
+          clear
+          echo "Primary ready (10.0.0.1). Use the instructions panel to start PostgreSQL."
+          echo ""
+          echo "Config changes:"
+          [ "$PG_CONF_CHANGED" = 1 ] \
+            && echo "  postgresql.conf: listen_addresses=*, wal_level=replica, max_wal_senders=5, wal_keep_size=64" \
+            || echo "  postgresql.conf: already configured"
+          echo "  pg_hba.conf: local postgres peer -> trust"
+          [ "$PG_HBA_CHANGED" = 1 ] \
+            && echo "  pg_hba.conf: added replication + postgres trust for 10.0.0.0/24" \
+            || echo "  pg_hba.conf: already configured"
+        fi
+
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   primary
+        10.0.0.2   replica
+        10.0.0.50  client
+
+  - id: replica
+    title: "Replica (10.0.0.2)"
+    x: 1230
+    y: 470
+    cols: 100
+    rows: 18
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname replica
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.2/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+        PG_CONF=/etc/postgresql/17/main/postgresql.conf
+        PG_CONF_CHANGED=0
+        if ! grep -q '^listen_addresses' "$PG_CONF"; then
+          echo "listen_addresses = '*'" >> "$PG_CONF"
+          PG_CONF_CHANGED=1
+        fi
+        PG_HBA=/etc/postgresql/17/main/pg_hba.conf
+        sed -i '/^local[[:space:]]*all[[:space:]]*postgres[[:space:]]*peer/s/peer/trust/' "$PG_HBA"
+        PG_HBA_CHANGED=0
+        if ! grep -q '10.0.0.0/24' "$PG_HBA"; then
+          echo "host  all  postgres  10.0.0.0/24  trust" >> "$PG_HBA"
+          PG_HBA_CHANGED=1
+        fi
+        echo "$PG_CONF_CHANGED" > /run/pg_conf_changed
+        echo "$PG_HBA_CHANGED" > /run/pg_hba_changed
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;replica\007'
+          PG_CONF_CHANGED=$(cat /run/pg_conf_changed 2>/dev/null || echo 0)
+          PG_HBA_CHANGED=$(cat /run/pg_hba_changed 2>/dev/null || echo 0)
+          clear
+          echo "Replica ready (10.0.0.2). Follow the instructions panel to join replication."
+          echo ""
+          echo "Config changes:"
+          [ "$PG_CONF_CHANGED" = 1 ] \
+            && echo "  postgresql.conf: listen_addresses=*" \
+            || echo "  postgresql.conf: already configured"
+          echo "  pg_hba.conf: local postgres peer -> trust"
+          [ "$PG_HBA_CHANGED" = 1 ] \
+            && echo "  pg_hba.conf: added postgres trust for 10.0.0.0/24" \
+            || echo "  pg_hba.conf: already configured"
+        fi
+
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   primary
+        10.0.0.2   replica
+        10.0.0.50  client
+
+  - id: client
+    title: "Client (10.0.0.50)"
+    x: 440
+    y: 60
+    cols: 100
+    rows: 22
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname client
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.50/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;client\007'
+          clear
+          echo "Client ready (10.0.0.50). Use the instructions panel to run queries."
+        fi
+
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   primary
+        10.0.0.2   replica
+        10.0.0.50  client
+
+switches:
+  - id: switch1
+    title: "Switch"
+    ports: 3
+    x: 750
+    y: 700
+
+wires:
+  - vm:
+      id: client
+      iface: eth0
+    hub:
+      id: switch1
+      port: 0
+  - vm:
+      id: primary
+      iface: eth0
+    hub:
+      id: switch1
+      port: 2
+  - vm:
+      id: replica
+      iface: eth0
+    hub:
+      id: switch1
+      port: 1
+
+default_window: readme
+
+docs:
+  - id: readme
+    title: "Lab Instructions"
+    x: 40
+    y: 60
+    width: 370
+    height: 950
+    markdown: |
+      ## PostgreSQL Streaming Replication Lab
+
+      This lab demonstrates Write-Ahead Logging (WAL)-based streaming replication between a primary and a hot standby replica. The client can write to the primary and read from either node — with the replica accepting read-only queries while continuously replaying streamed WAL segments.
+
+      ### Network layout
+
+      - Primary: `10.0.0.1` (read/write)
+      - Replica: `10.0.0.2` (hot standby, read-only)
+      - Client: `10.0.0.50` (runs psql)
+
+      ### Step 1: Start PostgreSQL on the primary
+
+      ```send-vm:primary
+      pg_ctlcluster 17 main start
+      ```
+      (this may take a few seconds, wait for the shell prompt to return before continuing)
+
+      ```send-vm:primary
+      pg_isready
+      ```
+
+      ### Step 2: Create the replication user and demo database
+
+      ```send-vm:primary
+      psql -U postgres -c "CREATE USER replicator REPLICATION LOGIN;"
+      ```
+
+      ```send-vm:primary
+      psql -U postgres -c "CREATE DATABASE demo;"
+      ```
+
+      ```send-vm:primary
+      psql -U postgres -d demo \
+        -c "CREATE TABLE events (
+              id  SERIAL PRIMARY KEY,
+              msg TEXT,
+              ts  TIMESTAMPTZ DEFAULT now()
+            );"
+      ```
+
+      ### Step 3: Connect from the client
+
+      Insert some rows into the `events` table on the primary:
+
+      ```send-vm:client
+      psql -h primary -U postgres -d demo \
+        -c "INSERT INTO events (msg)
+            VALUES ('hello'), ('world'), ('from client');"
+      ```
+
+      Query the rows back:
+
+      ```send-vm:client
+      psql -h primary -U postgres -d demo \
+        -c "SELECT * FROM events ORDER BY id;"
+      ```
+
+      ### Step 4: Bootstrap the replica with pg_basebackup
+
+      Drop the empty auto-created cluster, take a full base backup from the primary, then start the standby. The `-R` flag writes `standby.signal` and `primary_conninfo` automatically.
+
+      ```send-vm:replica
+      pg_ctlcluster 17 main stop 2>/dev/null; rm -rf /var/lib/postgresql/17/main
+      ```
+
+      ```send-vm:replica
+      su -s /bin/sh postgres \
+        -c "pg_basebackup -h primary -U replicator \
+              -D /var/lib/postgresql/17/main -P -Xs -R -c fast"
+      ```
+
+      ```send-vm:replica
+      pg_ctlcluster 17 main start
+      ```
+
+      ### Step 5: Verify streaming replication on the primary
+
+      The `pg_stat_replication` view shows connected standbys and their lag:
+
+      ```send-vm:primary
+      psql -U postgres -x \
+        -c "SELECT client_addr, state,
+                   sent_lsn, write_lsn, flush_lsn, replay_lsn,
+                   write_lag, flush_lag, replay_lag
+            FROM pg_stat_replication;"
+      ```
+
+      ### Step 6: Write data from the client
+
+      ```send-vm:client
+      psql -h primary -U postgres -d demo \
+        -c "INSERT INTO events (msg) VALUES ('Hello from primary');"
+      ```
+
+      ```send-vm:client
+      psql -h primary -U postgres -d demo \
+        -c "INSERT INTO events (msg) VALUES ('Replication test');"
+      ```
+
+      ### Step 7: Read from the replica (hot standby)
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "SELECT * FROM events ORDER BY id;"
+      ```
+
+      ### Step 8: Monitor replication lag
+
+      ```send-vm:client
+      watch -n 2 "psql -h primary -U postgres \
+        -c \"SELECT client_addr, state, replay_lag
+             FROM pg_stat_replication;\""
+      ```
+
+      ### Step 9: Inspect WAL settings
+
+      Check the replication configuration on the primary:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT name, setting, unit FROM pg_settings
+            WHERE name IN (
+              'wal_level', 'max_wal_senders',
+              'wal_keep_size', 'archive_mode'
+            );"
+      ```
+
+      Confirm the replica is in recovery mode:
+
+      ```send-vm:replica
+      psql -U postgres \
+        -c "SELECT pg_is_in_recovery(),
+                   pg_last_wal_receive_lsn(),
+                   pg_last_wal_replay_lsn();"
+      ```
+
+      ### Step 10: Simulate primary failure
+
+      Stop PostgreSQL on the primary to simulate a node failure:
+
+      ```send-vm:primary
+      pg_ctlcluster 17 main stop
+      ```
+
+      ### Step 11: Test the replica while the primary is down
+
+      Reads from the replica still work — the standby serves its local copy of the data:
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "SELECT * FROM events ORDER BY id;"
+      ```
+
+      Writes to the replica fail — it is still in read-only recovery mode:
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "INSERT INTO events (msg) VALUES ('write during outage');"
+      ```
+
+      Confirm the replica is still in recovery:
+
+      ```send-vm:replica
+      psql -U postgres \
+        -c "SELECT pg_is_in_recovery();"
+      ```
+
+      ### Step 12: Promote the replica to primary
+
+      ```send-vm:replica
+      pg_ctlcluster 17 main promote
+      ```
+
+      Confirm recovery has ended:
+
+      ```send-vm:replica
+      psql -U postgres \
+        -c "SELECT pg_is_in_recovery();"
+      ```
+
+      ### Step 13: Test reads and writes on the promoted replica
+
+      Reads still work:
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "SELECT * FROM events ORDER BY id;"
+      ```
+
+      Writes now succeed — the promoted node is a full read/write primary:
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "INSERT INTO events (msg) VALUES ('write after promotion');"
+      ```
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "SELECT * FROM events ORDER BY id;"
+      ```
+
+      ---
+
+      **Note:** The replica is a *hot standby* — it accepts read-only queries while continuously replaying WAL segments streamed from the primary. To observe lag, insert rows in a loop on the client, then watch `replay_lag` on the primary:
+
+      ```send-vm:client
+      for i in $(seq 1 100); do
+        psql -h primary -U postgres -d demo \
+          -c "INSERT INTO events (msg) VALUES ('lag test $i');" > /dev/null
+      done && echo "Done"
+      ```
+
+      Continuous archiving (`archive_mode = on`) extends this pattern to point-in-time recovery by writing WAL segments to an external archive location.
+
+      ### Next steps
+
+      ```goto:the-end
+      The End →
+      ```
+
+      Or keep going with the advanced topic below.
+
+      ---
+
+      ## Replication Slots
+
+      When a replica disconnects, the primary normally discards old WAL segments on its own schedule. If the replica is offline long enough the primary may remove WAL the replica still needs — and replication breaks on reconnect. A **replication slot** prevents this: the primary retains all WAL until the slot confirms it has been consumed.
+
+      ### Step 1 — Create a physical replication slot
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT pg_create_physical_replication_slot('replica_slot');"
+      ```
+
+      Confirm the slot exists — it is inactive until the replica connects and claims it:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT slot_name, active, restart_lsn FROM pg_replication_slots;"
+      ```
+
+      ### Step 2 — Configure the replica to use the slot
+
+      ```send-vm:replica
+      psql -U postgres \
+        -c "ALTER SYSTEM SET primary_slot_name = 'replica_slot';"
+      ```
+
+      ```send-vm:replica
+      pg_ctlcluster 17 main restart
+      ```
+
+      Check that the slot is now active on the primary:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT slot_name, active, restart_lsn FROM pg_replication_slots;"
+      ```
+
+      `active = t` confirms the replica is holding the slot open.
+
+      ### Step 3 — Disconnect the replica
+
+      Disconnect the **replica's** wire from the switch to simulate the replica going offline. The slot remains on the primary and `active` drops back to false:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT slot_name, active, restart_lsn FROM pg_replication_slots;"
+      ```
+
+      ### Step 4 — Generate WAL on the primary
+
+      Insert enough rows to advance the WAL position significantly while the replica is offline:
+
+      ```send-vm:client
+      for i in $(seq 1 200); do
+        psql -h primary -U postgres -d demo \
+          -c "INSERT INTO events (msg) VALUES ('slot test $i');" > /dev/null
+      done && echo "Done"
+      ```
+
+      Check how much WAL the slot is now retaining that would otherwise have been discarded:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT slot_name, restart_lsn, wal_status,
+                   pg_size_pretty(
+                     pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)
+                   ) AS retained
+            FROM pg_replication_slots;"
+      ```
+
+      ### Step 5 — Reconnect and watch catch-up
+
+      Reconnect the **replica's** wire. The replica reconnects, finds the slot, and starts replaying the retained WAL. Watch the lag close:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT client_addr, state, sent_lsn, replay_lsn, replay_lag
+            FROM pg_stat_replication;"
+      ```
+
+      Once `replay_lag` reaches zero the replica is fully caught up. Confirm by querying row count from the replica:
+
+      ```send-vm:client
+      psql -h replica -U postgres -d demo \
+        -c "SELECT COUNT(*), MAX(msg) FROM events;"
+      ```
+
+      ### Step 6 — Understand the trade-off
+
+      A slot prevents replication from breaking after WAL removal, but it also prevents WAL cleanup if the replica stays offline indefinitely. Check current WAL directory size:
+
+      ```send-vm:primary
+      du -sh /var/lib/postgresql/17/main/pg_wal/
+      ```
+
+      If a slot's replica is permanently gone, drop the slot to allow WAL cleanup:
+
+      ```send-vm:primary
+      psql -U postgres \
+        -c "SELECT pg_drop_replication_slot('replica_slot');"
+      ```
+
+      ---
+
+      ### Next steps
+
+      ```goto:the-end
+      The End →
+      ```

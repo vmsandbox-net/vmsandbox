@@ -1,0 +1,37 @@
+title: "Welcome"
+vms:
+  - id: vm1
+    title: "VM 1"
+    x: 40
+    y: 60
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname vm
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.2/24 dev eth0
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;console\007'
+        fi
+
+hubs:
+  - id: hub1
+    title: "Hub"
+    ports: 5
+    x: 240
+    y: 750
+
+wires:
+  - vm:
+      id: vm1
+      iface: eth0
+    hub:
+      id: hub1
+      port: 0

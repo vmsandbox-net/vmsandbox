@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vm sandbox</title>
+  <script>
+    // CDN host for all built assets. Leave empty to serve from the same origin.
+    // 'npm run build' reads this, appends the git hash, and sets Vite's base URL.
+    window.__CDN_HOST__ = 'cdn.vmsandbox.net'
+  </script>
+  </head>
+  <body>
+    <div id="page_titlebar">
+      <h1>vm<strong style="color:#fff">sandbox</strong>.net</h1>
+      <button id="btn_topology_title"></button>
+    </div>
+    <div id="sim_tune_panel" hidden></div>
+    <div id="app"></div>
+    <button id="btn_fab">+</button>
+    <footer id="page_footer">&copy; Jon Payne 2026 &mdash;&ensp;<a id="btn_about" href="#">About</a>&ensp;&mdash;&ensp;<a href="https://github.com/vmsandbox-net/vmsandbox" target="_blank" rel="noopener">GitHub</a></footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,423 @@
+title: etcd
+vms:
+  - id: server1
+    title: Server 1 (10.0.0.1)
+    x: 1150
+    'y': 59
+    cols: 100
+    rows: 15
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname server1
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.1/24 dev eth0
+        ip route add default via 10.0.0.100
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        export ETCD_UNSUPPORTED_ARCH=riscv64
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;server1\007'
+          clear
+          echo "Server 1 ready (10.0.0.1). Start etcd using the instructions panel."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   server1
+        10.0.0.2   server2
+        10.0.0.3   server3
+        10.0.0.50  client1
+        10.0.0.51  client2
+  - id: server2
+    title: Server 2 (10.0.0.2)
+    x: 1150
+    'y': 419
+    cols: 100
+    rows: 15
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname server2
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.2/24 dev eth0
+        ip route add default via 10.0.0.100
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        export ETCD_UNSUPPORTED_ARCH=riscv64
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;server2\007'
+          clear
+          echo "Server 2 ready (10.0.0.2). Start etcd using the instructions panel."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   server1
+        10.0.0.2   server2
+        10.0.0.3   server3
+        10.0.0.50  client1
+        10.0.0.51  client2
+  - id: server3
+    title: Server 3 (10.0.0.3)
+    x: 1150
+    'y': 780
+    cols: 100
+    rows: 15
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname server3
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.3/24 dev eth0
+        ip route add default via 10.0.0.100
+        cp /run/init/hosts /etc/hosts
+        dmesg -n 1
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        export ETCD_UNSUPPORTED_ARCH=riscv64
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;server3\007'
+          clear
+          echo "Server 3 ready (10.0.0.3). Start etcd using the instructions panel."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   server1
+        10.0.0.2   server2
+        10.0.0.3   server3
+        10.0.0.50  client1
+        10.0.0.51  client2
+  - id: client1
+    title: Client 1 (10.0.0.50)
+    x: 440
+    'y': 59
+    cols: 90
+    rows: 20
+    console_count: 8
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname client1
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.50/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;client1\007'
+          clear
+          echo "Client 1 ready (10.0.0.50). Run etcdctl commands using the instructions panel."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   server1
+        10.0.0.2   server2
+        10.0.0.3   server3
+        10.0.0.50  client1
+        10.0.0.51  client2
+  - id: client2
+    title: Client 2 (10.0.0.51)
+    x: 440
+    'y': 499
+    cols: 90
+    rows: 20
+    files:
+      init.sh: |
+        #!/bin/sh
+        hostname client2
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        ip link set lo up
+        ip link set eth0 up
+        ip addr add 10.0.0.51/24 dev eth0
+        cp /run/init/hosts /etc/hosts
+      startup.sh: |
+        export TERM=xterm-256color
+        alias ls='ls --color=auto'
+        alias ll='ls -alF'
+        PS1='\[\033[31m\]\u\[\033[0m\]@\[\033[32m\]$(hostname)\[\033[0m\]:\w# '
+
+        CONSOLE=$(tty)
+        if [ "$CONSOLE" = "/dev/hvc0" ]; then
+          printf '\033]30;client2\007'
+          clear
+          echo "Client 2 ready (10.0.0.51). Watch a key using the instructions panel."
+        fi
+      hosts: |
+        127.0.0.1  localhost
+        10.0.0.1   server1
+        10.0.0.2   server2
+        10.0.0.3   server3
+        10.0.0.50  client1
+        10.0.0.51  client2
+hubs: []
+switches:
+  - id: switch1
+    title: Switch
+    ports: 8
+    x: 600
+    'y': 949
+wires:
+  - vm:
+      id: client1
+      iface: eth0
+    hub:
+      id: switch1
+      port: 0
+  - vm:
+      id: client2
+      iface: eth0
+    hub:
+      id: switch1
+      port: 1
+  - vm:
+      id: server3
+      iface: eth0
+    hub:
+      id: switch1
+      port: 2
+  - vm:
+      id: server2
+      iface: eth0
+    hub:
+      id: switch1
+      port: 3
+  - vm:
+      id: server1
+      iface: eth0
+    hub:
+      id: switch1
+      port: 4
+docs:
+  - id: readme
+    title: Lab Instructions
+    x: 40
+    'y': 59
+    width: 380
+    height: 858
+    markdown: |
+      ## etcd Cluster Lab
+
+      This lab demonstrates a 3-node etcd cluster with two clients: one that writes keys and one that watches for changes.
+
+      ### Network layout
+
+      - Server 1: `10.0.0.1`
+      - Server 2: `10.0.0.2`
+      - Server 3: `10.0.0.3`
+      - Client 1: `10.0.0.50` (writer)
+      - Client 2: `10.0.0.51` (watcher)
+
+      ### Step 1: Start etcd on all three servers
+
+      Click each command to send it to the corresponding server VM.
+
+      Start Server 1:
+
+      ```send-vm:server1
+      etcd --name infra0 \
+        --initial-advertise-peer-urls http://10.0.0.1:2380 \
+        --listen-peer-urls http://10.0.0.1:2380 \
+        --listen-client-urls http://10.0.0.1:2379,http://127.0.0.1:2379 \
+        --advertise-client-urls http://10.0.0.1:2379 \
+        --initial-cluster-token etcd-cluster-1 \
+        --initial-cluster infra0=http://10.0.0.1:2380,infra1=http://10.0.0.2:2380,infra2=http://10.0.0.3:2380 \
+        --initial-cluster-state new
+      ```
+
+      Start Server 2:
+
+      ```send-vm:server2
+      etcd --name infra1 \
+        --initial-advertise-peer-urls http://10.0.0.2:2380 \
+        --listen-peer-urls http://10.0.0.2:2380 \
+        --listen-client-urls http://10.0.0.2:2379,http://127.0.0.1:2379 \
+        --advertise-client-urls http://10.0.0.2:2379 \
+        --initial-cluster-token etcd-cluster-1 \
+        --initial-cluster infra0=http://10.0.0.1:2380,infra1=http://10.0.0.2:2380,infra2=http://10.0.0.3:2380 \
+        --initial-cluster-state new
+      ```
+
+      Start Server 3:
+
+      ```send-vm:server3
+      etcd --name infra2 \
+        --initial-advertise-peer-urls http://10.0.0.3:2380 \
+        --listen-peer-urls http://10.0.0.3:2380 \
+        --listen-client-urls http://10.0.0.3:2379,http://127.0.0.1:2379 \
+        --advertise-client-urls http://10.0.0.3:2379 \
+        --initial-cluster-token etcd-cluster-1 \
+        --initial-cluster infra0=http://10.0.0.1:2380,infra1=http://10.0.0.2:2380,infra2=http://10.0.0.3:2380 \
+        --initial-cluster-state new
+      ```
+
+      ### Step 2: Start watching on Client 2
+
+      Client 2 will watch the `greeting` key and print updates as they arrive:
+
+      ```send-vm:client2
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        watch greeting
+      ```
+
+      ### Step 3: Write keys from Client 1
+
+      Put a value into the cluster from Client 1 and observe Client 2 receive the update:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        put greeting "Hello 1"
+      ```
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        put greeting "Hello 2"
+      ```
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        put greeting "Hello 3"
+      ```
+
+      ---
+
+      **Note:** All three servers must be started before the cluster becomes available. Unlike normal operation — where a quorum of nodes is sufficient — initial bootstrapping requires every declared member to come up before the cluster can form and elect a leader.
+
+      ### Next steps
+
+      ```goto:postgresql
+      PostgreSQL Lab →
+      ```
+
+      Or keep going with the advanced topic below.
+
+      ---
+
+      ## Fault Tolerance & Quorum
+
+      etcd uses the **Raft consensus algorithm**. A cluster of N nodes can tolerate ⌊N/2⌋ failures — a 3-node cluster survives 1 node loss but loses quorum if 2 nodes go down and all writes block.
+
+      ### Step 1 — Check cluster health
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        endpoint health
+      ```
+
+      All three nodes should report `is healthy`.
+
+      ### Step 2 — Simulate a single node failure
+
+      Disconnect **Server 3's** wire from the switch. Click on either end of the wire between server 3 and the switch, then press the 'x' button. Wait 2 seconds, then write a key:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        put greeting "still working"
+      ```
+
+      The write succeeds. Two nodes still form a majority (2 > 3/2), so Raft can commit the entry.
+
+      Read it back to confirm:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        get greeting
+      ```
+
+      ### Step 3 — Inspect the cluster view
+
+      Server 3 is unreachable but still a declared member. Check which nodes are healthy right now:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        endpoint health
+      ```
+
+      ### Step 4 — Lose quorum
+
+      Disconnect **Server 2's** wire as well. Only Server 1 remains, but it cannot form a majority alone. Attempt a write — it will time out:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        put greeting "will this work?" \
+        --dial-timeout=3s --command-timeout=3s
+      ```
+
+      etcd refuses to commit because it cannot confirm a majority of members received the entry.
+
+      ### Step 5 — Restore quorum
+
+      Reconnect **Server 2's** wire. Within a few seconds the cluster elects a leader and resumes normal operation:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379 \
+        put greeting "quorum restored"
+      ```
+
+      ### Step 6 — Reconnect Server 3 and verify resync
+
+      Reconnect **Server 3's** wire. It rejoins the cluster and replays the log entries it missed while disconnected:
+
+      ```send-vm:client1
+      etcdctl \
+        --endpoints server1:2379,server2:2379,server3:2379 \
+        endpoint health
+      ```
+
+      Read the key directly from Server 3 — it now has the up-to-date value:
+
+      ```send-vm:client1
+      etcdctl --endpoints server3:2379 get greeting
+      ```
+
+      ### Next steps
+
+      ```goto:postgresql
+      PostgreSQL Lab →
+      ```
+default_window: readme
