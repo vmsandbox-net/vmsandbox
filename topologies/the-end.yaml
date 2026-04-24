@@ -45,12 +45,6 @@ docs:
       - etcd (distributed key-value)
       - PostgreSQL (streaming replication)
 
-      ---
-
-      ## What is VMSandbox?
-
-      **vmsandbox.net** runs real Linux virtual machines entirely in your browser — no install, no cloud account, no server. Every VM is a full RISC-V Linux system with a real network stack.
-
       Visit the project on GitHub:
 
       [github.com/vmsandbox-net/vmsandbox](https://github.com/vmsandbox-net/vmsandbox)
